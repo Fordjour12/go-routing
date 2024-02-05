@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	//	"github.com/julienschmidt/httprouter"
 	"github.com/gorilla/mux"
 )
 
@@ -25,8 +24,15 @@ func ArticleCategoryHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/articles/{category}/", ArticleCategoryHandler)
+	// r.HandleFunc("/articles/{category}/", ArticleCategoryHandler)
 	r.HandleFunc("/articles/{category}/{id:[0-9]+}", ArticleHandler).Name("article")
+
+	// sub-routing and prefixing path( r.PathPrefix("/articles"))
+	s := r.PathPrefix("/articles").Subrouter()
+
+	// can contain(articles/{books}, articles/tech, articles/tech/123)
+	s.HandleFunc("/{category}/", ArticleCategoryHandler)
+
 
 	//HandleFunc chaning is possible (HandlerFunc and not HandleFunc)
 	// r.HandleFunc("/articles/{cate}/").HandlerFunc(ArticleCategoryHandler)
@@ -34,6 +40,8 @@ func main() {
 	// Reverse mapping(Registered URLs)
 	url, err := r.Get("article").URL("category", "books", "id", "123")
 	fmt.Printf("%v, %v\n", url, err)
+
+
 
 	srv := &http.Server{
 		Handler: r,
